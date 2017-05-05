@@ -1,0 +1,74 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <time.h>
+#include <string.h>
+#include "bstree.h"
+#include "hashtab.h"
+
+
+const int MAX_WORDS = 50000;
+const int STEP = 2500;
+const int COUNT_OF_SEARCH = 100;
+
+double wtime()
+{
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    return (double)t.tv_sec + (double)t.tv_usec * 1E-6;
+}
+
+int getrand(int min, int max) {
+    return (double) rand() / (RAND_MAX + 1.0) * (max - min) + min;
+}
+
+int main() 
+{
+    double timeTable[MAX_WORDS / STEP + 1];
+    double t;
+    FILE *f;
+    char *line = NULL;
+    size_t len = 0;
+    int i = 0;
+    char *words[MAX_WORDS]; //SIZE
+    int colliz;// = 0;
+
+    f = fopen("words.txt", "r");
+    if (!f)
+        exit(-1);
+    while ((getline(&line, &len, f)) != -1 && i < MAX_WORDS) {
+        line[strlen(line) - 1] = '\0';
+        words[i] = malloc(strlen(line) + 1);
+        strcpy(words[i++], line);
+    }
+    
+    listnode *hashtab[HASH_SIZE], *node;
+    hashtab_init(hashtab);  
+    double timetable[MAX_WORDS / STEP + 1];
+
+    listnode *fnv_hash[HASH_SIZE], *nodefnv;
+    hashtab_init(fnv_hash);
+
+    for(i = 1; i < MAX_WORDS; i++) {
+        int ti = (i - 1) / STEP;
+        hashtab_add(hashtab, words[i], i, &colliz);
+        //hashtab_add(fnv_hash, words[i], i);
+	    int count = 0;
+        if(i % STEP == 0) {
+            timetable[ti] = 0;
+            int j;
+            for(j = 0; j < COUNT_OF_SEARCH; j++) {
+                int r = getrand(1, i);
+                t = wtime();
+                node = hashtab_lookup(hashtab, words[r]);
+		
+		//nodefnv = hashtab_lookup(fnv_hash, words[r]);
+                timetable[ti] += wtime() - t;
+            }
+        timetable[ti] /= COUNT_OF_SEARCH;
+
+
+            printf("%d %.9lf %d \n", i,  timetable[ti], colliz);
+        }
+    }
+}
