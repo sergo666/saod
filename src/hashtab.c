@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "hashtab.h"
-//#define HASH_MUL 31
-//#define HASH_SIZE 50000
+#define HASH_MUL 31
+#define HASH_SIZE 50000
 
 int colliz = 0;
 
@@ -41,7 +41,7 @@ void hashtab_add(listnode **hashtab, char *key, int value, int *colliz)
 {
     listnode *node;
     int index = hashtab_hash(key);
-    *colliz=0;
+    *colliz = 0;
 
     node = malloc(sizeof(*node));
     if (node) {
